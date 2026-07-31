@@ -2479,6 +2479,160 @@ body::before {
 }
 
 /* ══════════════════════════════════════
+   MATCH
+══════════════════════════════════════ */
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.match-league-box {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.match-league-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 12px; height: 12px;
+  border-top: 1px solid var(--cyan-40);
+  border-left: 1px solid var(--cyan-40);
+}
+
+.match-league-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.match-league-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.match-league-status {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 1px 7px;
+  text-transform: uppercase;
+}
+
+.match-league-status-on {
+  color: var(--green);
+  background: var(--green-10);
+  border: 1px solid rgba(0,255,136,0.24);
+}
+
+.match-league-status-off {
+  color: var(--text-3);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.match-deck-total {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--text-2);
+  letter-spacing: 0.05em;
+}
+
+.match-deck-total span {
+  color: var(--cyan);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-shadow: 0 0 8px rgba(0,229,255,0.3);
+}
+
+.match-no-deck {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem;
+  color: var(--text-3);
+  letter-spacing: 0.05em;
+  padding: 6px 0;
+}
+
+.match-league-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.match-action-btn {
+  flex: 1;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--cyan-40);
+  color: var(--cyan);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.match-action-btn:hover:not(:disabled) {
+  background: var(--cyan-10);
+  box-shadow: 0 0 14px rgba(0,229,255,0.18);
+}
+
+.match-action-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.match-action-btn-launch {
+  border-color: rgba(255,45,120,0.4);
+  color: var(--pink);
+}
+
+.match-action-btn-launch:hover:not(:disabled) {
+  background: var(--pink-10);
+  box-shadow: 0 0 14px rgba(255,45,120,0.18);
+}
+
+.match-league-error {
+  color: var(--red);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+}
+
+.match-result-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  padding: 8px 11px;
+}
+
+.match-result-score {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.match-result-opponent {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.68rem;
+  color: var(--text-2);
+}
+
+/* ══════════════════════════════════════
    REDUCED MOTION
 ══════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {

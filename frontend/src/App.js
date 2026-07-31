@@ -4,6 +4,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Marketplace from "./components/Marketplace";
 import Profile from "./components/Profile";
 import Arena from "./components/Arena";
+import Match from "./components/Match";
 import DivisionLeaderboard from "./components/DivisionLeaderboard";
 import {
   fetchMarketplace,
@@ -14,8 +15,8 @@ import {
 } from "./services/api";
 import "./App.css";
 
-const TABS = ["Marché", "Profil", "Arène", "Classement"];
-const TOKEN_REQUIRED = ["Profil", "Arène", "Classement"];
+const TABS = ["Marché", "Profil", "Arène", "Match", "Classement"];
+const TOKEN_REQUIRED = ["Profil", "Arène", "Match", "Classement"];
 const TOKEN_KEY = "genezys_token";
 
 const PAGE_INFO = {
@@ -37,6 +38,12 @@ const PAGE_INFO = {
     titleAccent: "OPTIMISEUR",
     desc: "calculateur de score · classement meilleures cartes · métriques d'efficacité",
   },
+  Match: {
+    prompt: "// MODULE_GESTION_MATCH",
+    titleBase: "CENTRE ",
+    titleAccent: "DE MATCH",
+    desc: "decks actifs · optimisation automatique · lancement de match",
+  },
   Classement: {
     prompt: "// MODULE_CLASSEMENT_DIVISION",
     titleBase: "CLASSEMENT ",
@@ -49,6 +56,7 @@ const EMPTY_STATE_MSG = {
   Marché:       "Aucune annonce trouvée sur le marché.",
   Profil:       "Aucune donnée de profil chargée.",
   Arène:        "Aucune donnée de carte disponible.",
+  Match:        "Aucune donnée de deck disponible.",
   Classement:   "Aucune donnée de classement.",
 };
 
@@ -126,6 +134,7 @@ export default function App() {
       const needsFetch = {
         Profil: !cardsData && !matchData && !transactionsData && !userProfileData,
         Arène:  false,
+        Match:  false,
       }[tab];
       if (needsFetch) loadTokenTab(tab, token);
     } else {
@@ -160,6 +169,7 @@ export default function App() {
     Marché:      marketplaceData !== null,
     Profil:      cardsData !== null || matchData !== null || transactionsData !== null || userProfileData !== null,
     Arène:       marketplaceData !== null,
+    Match:       true,
     Classement:  true,
   }[activeTab];
 
@@ -288,6 +298,10 @@ export default function App() {
 
         {activeTab === "Arène" && marketplaceData && (
           <Arena data={marketplaceData} />
+        )}
+
+        {activeTab === "Match" && (
+          <Match token={token} />
         )}
 
         {activeTab === "Classement" && (

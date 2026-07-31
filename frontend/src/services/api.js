@@ -109,6 +109,42 @@ export async function fetchCups(token) {
   return response.json();
 }
 
+export async function fetchMatchDecks(token) {
+  const response = await fetch(
+    `${BASE_URL}/match/decks`,
+    { headers: { Authorization: token } }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function optimizeDeck(token, slot) {
+  const response = await fetch(
+    `${BASE_URL}/match/optimize/${slot}`,
+    { method: "POST", headers: { Authorization: token } }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function launchMatch(token, slot) {
+  const response = await fetch(
+    `${BASE_URL}/match/launch/${slot}`,
+    { method: "POST", headers: { Authorization: token } }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
 export async function fetchCupLeaderboard(token, cupId, topx = 100) {
   const params = new URLSearchParams({ cupId, topx, aroundx: 10, language: "FR" });
   const response = await fetch(

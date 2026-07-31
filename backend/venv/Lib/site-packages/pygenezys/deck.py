@@ -1,4 +1,13 @@
 class DeckResource:
+    SLOT_HASHES = {
+        "7d06fd0f44eceb7a9731e554f8dda962": "division",
+        "ebd84812d34db552d0e49d8b77ac2da2": "cup_common",
+        "35492e16883de04d62263ac46ccc7648": "cup_limited",
+        "30ae6f71f9b1faaa705a0331cb9fbeff": "cup_rare",
+        "1d2ed7708f26e5caa8a82b869c1cbcf8": "cup_epic",
+        "9b882b4a63286502953292996298ecb8": "cup_legendary",
+    }
+
     def __init__(self, client):
         self.client = client
         self.url = f"{client.BASE_URL}/api-prod-fantasy-game-service/decks"
@@ -76,3 +85,12 @@ class DeckResource:
             "data": {"acceptedRarities": ["common", "Limited", "Rare", "Epic", "Legendary"]},
             "hash": "9b882b4a63286502953292996298ecb8",
         })
+
+    def get_current_decks(self):
+        response = self.client._request("GET", self.url, params={"language": "FR"})
+
+        decks = {}
+        for deck in response['data']:
+            slot = self.SLOT_HASHES.get(deck['compatibility']['hash'], deck['compatibility']['hash'])
+            decks[slot] = deck['cardsSummary']
+        return decks
