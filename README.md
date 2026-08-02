@@ -1,5 +1,158 @@
 # genezys_helper
 
+Application d'assistance Genezys reconstruite en utilisant la bibliothèque Python pygenezys.
+
+## Structure du projet
+
+```
+genezys_helper/
+├── backend/          # Backend FastAPI utilisant pygenezys
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── routers/
+│       ├── __init__.py
+│       ├── leaderboard.py
+│       ├── marketplace.py
+│       ├── cards.py
+│       ├── matches.py
+│       ├── transactions.py
+│       └── profile.py
+└── frontend/         # Frontend React (modifié depuis l'original)
+    ├── src/
+    ├── public/
+    └── package.json
+```
+
+## Fonctionnalités
+
+- **Marketplace**: Parcourir les annonces de cartes actuelles avec filtrage et tri
+- **Profil**: Voir vos cartes, historique de matchs et historique de transactions
+- **Arène**: Optimiser les decks avec calculateur de score d'arène et classeur de cartes
+- **Classement**: Classements de division avec visibilité des decks
+
+## Obtenir un token
+
+`pygenezys` ne se connecte pas en votre nom — vous fournissez votre propre
+token de session, le même que celui utilisé par le site web :
+
+1. Connectez-vous sur [app.genezys.xyz](https://app.genezys.xyz) dans votre navigateur.
+2. Ouvrez les outils de développement de votre navigateur (F12) ou faites un clic droit et cliquez sur 'inspecter' <img width="1871" height="860" alt="inspected" src="https://github.com/user-attachments/assets/cfb1a386-a34e-46f9-bf93-3ec9cd8f7806" />
+
+3. Allez dans l'onglet Réseau (Network). <img width="1885" height="821" alt="2" src="https://github.com/user-attachments/assets/0b03177a-32f9-4ef3-916d-b6679e837572" />
+
+4. Rechargez la page et trouvez une requête vers `app.genezys.xyz`.<img width="1917" height="862" alt="5" src="https://github.com/user-attachments/assets/751245f6-52e9-44cc-b96c-62db6526d2a3" />
+
+5. Copiez la valeur de l'en-tête de requête `Authorization` — c'est votre token.<img width="1873" height="755" alt="6" src="https://github.com/user-attachments/assets/c01b1cb6-31c0-4a31-8579-c2f278b3f161" />
+
+
+Ce token a une durée de vie limitée (environ une heure). Une fois expiré, répétez les
+étapes ci-dessus pour en obtenir un nouveau et passez-le à `set_token()` (voir ci-dessous)
+au lieu de créer un nouveau client.
+
+
+## Configuration du Backend
+
+1. Naviguez vers le répertoire backend :
+```bash
+cd backend
+```
+
+2. Créez un environnement virtuel :
+```bash
+python -m venv venv
+source venv/bin/activate  # Sur Windows : venv\Scripts\activate
+```
+
+3. Installez les dépendances :
+```bash
+pip install -r requirements.txt
+```
+
+4. Lancez le serveur :
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+Le backend sera disponible sur http://localhost:8000
+
+## Configuration du Frontend
+
+1. Naviguez vers le répertoire frontend :
+```bash
+cd frontend
+```
+
+2. Installez les dépendances :
+```bash
+npm install
+```
+
+3. Démarrez le serveur de développement :
+```bash
+npm start
+```
+
+Le frontend sera disponible sur http://localhost:3000
+
+## Endpoints API
+
+- `GET /health` - Vérification de santé
+- `GET /marketplace` - Annonces du marketplace
+- `GET /cards` - Collection de cartes de l'utilisateur (nécessite authentification)
+- `GET /matches` - Historique de matchs (nécessite authentification)
+- `GET /transactions` - Historique de transactions (nécessite authentification)
+- `GET /leaderboard/division` - Classement de division (nécessite authentification)
+- `GET /profile` - Profil utilisateur (nécessite authentification)
+
+## Authentification
+
+L'application utilise les tokens de session Genezys pour l'authentification :
+
+1. Connectez-vous sur app.genezys.xyz dans votre navigateur
+2. Ouvrez les DevTools (F12) → onglet Réseau
+3. Trouvez n'importe quelle requête et copiez la valeur de l'en-tête `Authorization`
+4. Collez-la dans l'application lorsque demandé
+
+Les tokens expirent après ~1 heure.
+
+## Changements par rapport à l'original
+
+**Fonctionnalités supprimées :**
+- Base de données MongoDB et mise en cache
+- Base de données des athlètes et scraping d'articles RSS
+- Suivi de l'historique des ventes et tableau de bord analytique
+- Registre de cartes et système de contribution
+
+**Fonctionnalités conservées :**
+- Toutes les données en direct de l'API Genezys via pygenezys
+- Parcours du marketplace
+- Gestion du profil
+- Outils d'optimisation de l'arène
+- Classements du leaderboard
+
+## Stack Technique
+
+**Backend :**
+- FastAPI
+- pygenezys
+- uvicorn
+
+**Frontend :**
+- React
+- Recharts (pour les visualisations de l'Arène)
+- Lucide React (icônes)
+
+## Licence
+
+MIT
+
+---
+
+# English Version
+
+# genezys_helper
+
 Genezys helper application rebuilt using the pygenezys Python library.
 
 ## Project Structure
