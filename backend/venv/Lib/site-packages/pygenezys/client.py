@@ -5,6 +5,7 @@ from .challenges import ChallengesResource
 from .cup import CupResource
 from .deck import DeckResource
 from .exceptions import GenezysAPIError, GenezysAuthError, GenezysConnectionError
+from .items import ItemsResource
 from .match import MatchResource
 from .market import MarketResource
 from .match_history import MatchHistoryResource
@@ -38,6 +39,7 @@ class GenezysClient:
         self.challenges = ChallengesResource(self)
         self.cup = CupResource(self)
         self.deck = DeckResource(self)
+        self.items = ItemsResource(self)
         self.match = MatchResource(self)
         self.match_history = MatchHistoryResource(self)
         self.market = MarketResource(self)

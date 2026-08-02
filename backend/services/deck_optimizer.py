@@ -58,3 +58,68 @@ def eligible_cards_for_slot(slot, cards):
         return cards
     accepted = CUP_ACCEPTED_RARITIES[slot]
     return [c for c in cards if card_rarity(c) in accepted]
+
+
+def _boosted_characteristics(characteristics, item):
+    """Card characteristics with values inflated by the item's boostPercentage."""
+    if not item:
+        return characteristics
+    boost_by_name = {b["name"]: b["boost_percentage"] for b in item["boosted_characteristics"]}
+    return [
+        {**c, "value": c["value"] * (1 + boost_by_name[c["name"]] / 100)}
+        if c["name"] in boost_by_name else c
+        for c in characteristics
+    ]
+
+
+def score_card_with_item(card, boosted_levels, boosted_characteristics, item=None):
+    """Same as score_card, but with the card's characteristics inflated by an equipped item first."""
+    if not item:
+        return score_card(card, boosted_levels, boosted_characteristics)
+    boosted_card = {**card, "characteristics": _boosted_characteristics(card["characteristics"], item)}
+    return score_card(boosted_card, boosted_levels, boosted_characteristics)
+
+
+def available_item_quantities(items, freed_item_ids=()):
+    """{item_id: remaining equippable copies}, accounting for freed_item_ids no longer in use."""
+    freed_counts = {}
+    for item_id in freed_item_ids:
+        freed_counts[item_id] = freed_counts.get(item_id, 0) + 1
+
+    availability = {}
+    for item in items:
+        remaining = item["quantity"] - item["in_nb_deck_usage"] + freed_counts.get(item["id"], 0)
+        availability[item["id"]] = max(remaining, 0)
+    return availability
+
+
+def pick_best_items(cards, items, boosted_levels, boosted_characteristics, availability):
+    """Greedy highest-gain-first assignment of equipment items to cards.
+
+    Returns {card_id: item_id}, only for pairs with a strictly positive score gain.
+    """
+    base_scores = {card["id"]: score_card(card, boosted_levels, boosted_characteristics) for card in cards}
+
+    candidates = []
+    for card in cards:
+        base = base_scores[card["id"]]
+        for item in items:
+            if availability.get(item["id"], 0) <= 0:
+                continue
+            gain = score_card_with_item(card, boosted_levels, boosted_characteristics, item) - base
+            if gain > 0:
+                candidates.append((gain, card["id"], item["id"]))
+
+    candidates.sort(key=lambda c: c[0], reverse=True)
+
+    remaining = dict(availability)
+    assigned_cards = set()
+    assignment = {}
+    for _, card_id, item_id in candidates:
+        if card_id in assigned_cards or remaining.get(item_id, 0) <= 0:
+            continue
+        assignment[card_id] = item_id
+        assigned_cards.add(card_id)
+        remaining[item_id] -= 1
+
+    return assignment

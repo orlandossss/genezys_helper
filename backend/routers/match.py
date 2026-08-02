@@ -2,7 +2,13 @@ from fastapi import APIRouter, Header, HTTPException
 from pygenezys import GenezysClient
 from pygenezys.deck import DeckResource
 
-from services.deck_optimizer import eligible_cards_for_slot, pick_best_deck, score_card
+from services.deck_optimizer import (
+    available_item_quantities,
+    eligible_cards_for_slot,
+    pick_best_deck,
+    pick_best_items,
+    score_card_with_item,
+)
 
 router = APIRouter(prefix="/match", tags=["match"])
 
@@ -33,11 +39,11 @@ def _cup_availability(client):
     return availability
 
 
-def _card_display_fields(card, boosted_levels, boosted_characteristics):
+def _card_display_fields(card, boosted_levels, boosted_characteristics, item=None):
     if not card:
         return {}
     try:
-        score = score_card(card, boosted_levels, boosted_characteristics)
+        score = score_card_with_item(card, boosted_levels, boosted_characteristics, item)
     except (KeyError, TypeError):
         score = None
     return {
@@ -48,6 +54,7 @@ def _card_display_fields(card, boosted_levels, boosted_characteristics):
         "baseScore": card.get("baseScore"),
         "score": score,
         "image": card.get("image"),
+        "equipmentTitle": item.get("title") if item else None,
     }
 
 
@@ -56,27 +63,31 @@ def _total_score(cards):
     return sum(scores) if scores else None
 
 
-def _enrich_deck(cards_summary, cards_by_id, boosted_levels, boosted_characteristics):
+def _enrich_deck(cards_summary, cards_by_id, items_by_id, boosted_levels, boosted_characteristics):
     enriched = []
     for summary in cards_summary:
         card = cards_by_id.get(summary.get("id"))
+        equipment_id = summary.get("equipmentId")
+        item = items_by_id.get(equipment_id) if equipment_id else None
         enriched.append({
             "id": summary.get("id"),
             "collectionId": summary.get("collectionId"),
-            "equipmentId": summary.get("equipmentId"),
-            **_card_display_fields(card, boosted_levels, boosted_characteristics),
+            "equipmentId": equipment_id,
+            **_card_display_fields(card, boosted_levels, boosted_characteristics, item),
         })
     return enriched
 
 
-def _enrich_picked(cards, boosted_levels, boosted_characteristics):
+def _enrich_picked(cards, item_assignment, items_by_id, boosted_levels, boosted_characteristics):
     enriched = []
     for card in cards:
+        item_id = item_assignment.get(card.get("id"))
+        item = items_by_id.get(item_id) if item_id else None
         enriched.append({
             "id": card.get("id"),
             "collectionId": card.get("collectionId"),
-            "equipmentId": card.get("equipmentId"),
-            **_card_display_fields(card, boosted_levels, boosted_characteristics),
+            "equipmentId": item_id,
+            **_card_display_fields(card, boosted_levels, boosted_characteristics, item),
         })
     return enriched
 
@@ -100,13 +111,17 @@ async def get_decks(authorization: str = Header(...)):
     current_decks = client.deck.get_current_decks()
     all_cards = client.my_cards.get_my_cards(max_results=100)["data"]["cardsList"]
     cards_by_id = {c["id"]: c for c in all_cards}
+    equipment_items = client.items.get_items_info(item_type="equipment")
+    items_by_id = {i["id"]: i for i in equipment_items}
     cup_availability = _cup_availability(client)
     _, boosted_levels, boosted_characteristics = client.arena.get_arena_info()
 
     result = {}
     for slot in SLOTS:
         cup_id = cup_availability.get(slot)
-        cards = _enrich_deck(current_decks.get(slot, []), cards_by_id, boosted_levels, boosted_characteristics)
+        cards = _enrich_deck(
+            current_decks.get(slot, []), cards_by_id, items_by_id, boosted_levels, boosted_characteristics
+        )
         result[slot] = {
             "league_type": "division" if slot == "division" else "cup",
             "cup_id": cup_id,
@@ -137,10 +152,23 @@ async def optimize_deck(slot: str, authorization: str = Header(...)):
     _, boosted_levels, boosted_characteristics = client.arena.get_arena_info()
     best = pick_best_deck(eligible, boosted_levels, boosted_characteristics)
 
-    build = getattr(client.deck, BUILDER_METHOD[slot])
-    message = build(best)
+    equipment_items = client.items.get_items_info(item_type="equipment")
+    items_by_id = {i["id"]: i for i in equipment_items}
 
-    cards = _enrich_picked(best, boosted_levels, boosted_characteristics)
+    current_decks = client.deck.get_current_decks()
+    freed_item_ids = [c.get("equipmentId") for c in current_decks.get(slot, []) if c.get("equipmentId")]
+    availability = available_item_quantities(equipment_items, freed_item_ids)
+    item_assignment = pick_best_items(best, equipment_items, boosted_levels, boosted_characteristics, availability)
+
+    best_with_equipment = [
+        {**card, "equipmentId": item_assignment[card["id"]]} if card["id"] in item_assignment else card
+        for card in best
+    ]
+
+    build = getattr(client.deck, BUILDER_METHOD[slot])
+    message = build(best_with_equipment)
+
+    cards = _enrich_picked(best, item_assignment, items_by_id, boosted_levels, boosted_characteristics)
     return {
         "message": message,
         "cup_id": cup_id,

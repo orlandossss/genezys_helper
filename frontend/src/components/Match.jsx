@@ -45,6 +45,7 @@ function DeckCardThumb({ card }) {
       <p className="deck-card-name">{card.clientName ?? "—"}</p>
       <p className="deck-card-score">{card.score ?? "—"}</p>
       <p className="deck-card-equip">{levelLabel} · {healthLabel}</p>
+      {card.equipmentTitle && <p className="deck-card-equip">{card.equipmentTitle}</p>}
     </div>
   );
 }
