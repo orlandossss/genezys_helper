@@ -31,6 +31,26 @@ genezys_helper/
 - **Arena**: Optimize decks with arena score calculator and card ranker
 - **Leaderboard**: Division rankings with deck visibility
 
+## Getting a token
+
+`pygenezys` does not log in on your behalf — you provide your own session
+token, the same one the website itself uses:
+
+1. Log into [app.genezys.xyz](https://app.genezys.xyz) in your browser.
+2. Open your browser's developer tools (F12) or right-click and click on 'inspect' <img width="1871" height="860" alt="inspected" src="https://github.com/user-attachments/assets/cfb1a386-a34e-46f9-bf93-3ec9cd8f7806" />
+
+3. Go to the Network tab. <img width="1885" height="821" alt="2" src="https://github.com/user-attachments/assets/0b03177a-32f9-4ef3-916d-b6679e837572" />
+
+4. Reload the page and find any request to `app.genezys.xyz`.<img width="1917" height="862" alt="5" src="https://github.com/user-attachments/assets/751245f6-52e9-44cc-b96c-62db6526d2a3" />
+
+5. Copy the value of the `Authorization` request header — that's your token.<img width="1873" height="755" alt="6" src="https://github.com/user-attachments/assets/c01b1cb6-31c0-4a31-8579-c2f278b3f161" />
+
+
+This token is short-lived (roughly one hour). Once it expires, repeat the
+steps above to get a new one and pass it to `set_token()` (see below)
+instead of creating a new client.
+
+
 ## Backend Setup
 
 1. Navigate to backend directory:
