@@ -61,7 +61,7 @@ const EMPTY_STATE_MSG = {
 };
 
 export default function App() {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) ?? "");
+  const [token, setToken] = useState(() => sessionStorage.getItem(TOKEN_KEY) ?? "");
   const [tokenDraft, setTokenDraft] = useState("");
   const [activeTab, setActiveTab] = useState("Marché");
   const [tokenPanelOpen, setTokenPanelOpen] = useState(false);
